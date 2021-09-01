@@ -1,14 +1,38 @@
 import React, { Component, Fragment } from 'react';
-import { ScrollView, Alert, Image, StyleSheet, Text, View, AsyncStorage,Platform, StatusBar } from 'react-native';
-import { Toolbar, withTheme, Card } from 'react-native-material-ui'
+import { ScrollView, Alert, StyleSheet, Text, AsyncStorage,Platform, StatusBar } from 'react-native';
+import { Image, Card, View, Subtitle, Caption, Button, Icon } from '@shoutem/ui';
+import { AppLoading } from 'expo';
+import * as Font from 'expo-font';
+import AppNavigator from './navigation/AppNavigation';
 
 import backupData from './assets/current.json'
 const STATUSBAR_HEIGHT = Platform.OS === 'ios' ? 20 : StatusBar.currentHeight;
 
-class App extends Component {
+export default class App extends Component {
   constructor(props){
     super(props);
-    this.state = { isLoading: true };
+    this.state = {
+      isLoading: true,
+      fontsAreLoaded: false
+    };
+  }
+
+  async componentWillMount() {
+    await Font.loadAsync({
+      'Rubik-Black': require('./node_modules/@shoutem/ui/fonts/Rubik-Black.ttf'),
+      'Rubik-BlackItalic': require('./node_modules/@shoutem/ui/fonts/Rubik-BlackItalic.ttf'),
+      'Rubik-Bold': require('./node_modules/@shoutem/ui/fonts/Rubik-Bold.ttf'),
+      'Rubik-BoldItalic': require('./node_modules/@shoutem/ui/fonts/Rubik-BoldItalic.ttf'),
+      'Rubik-Italic': require('./node_modules/@shoutem/ui/fonts/Rubik-Italic.ttf'),
+      'Rubik-Light': require('./node_modules/@shoutem/ui/fonts/Rubik-Light.ttf'),
+      'Rubik-LightItalic': require('./node_modules/@shoutem/ui/fonts/Rubik-LightItalic.ttf'),
+      'Rubik-Medium': require('./node_modules/@shoutem/ui/fonts/Rubik-Medium.ttf'),
+      'Rubik-MediumItalic': require('./node_modules/@shoutem/ui/fonts/Rubik-MediumItalic.ttf'),
+      'Rubik-Regular': require('./node_modules/@shoutem/ui/fonts/Rubik-Regular.ttf'),
+      'rubicon-icon-font': require('./node_modules/@shoutem/ui/fonts/rubicon-icon-font.ttf'),
+    });
+
+    this.setState({ fontsAreLoaded: true });
   }
 
   saveEvents = async (events) => {
@@ -53,24 +77,29 @@ class App extends Component {
   render() {
     const { isLoading, events } = this.state
 
-      return (
-        <ScrollView style={styles.container}>
-          <Toolbar centerElement="Agenda Lx" />
-          {events && events.slice(0,10).map( event => (
-            <Card key={event.ID}>
-              <Image source={{uri: event.featured_media}}
-                     style={{width: 400, height: 200}} />
-              <View style={styles.innerCard}>
-                <Text style={styles.cardTitle}>{event.title.rendered}</Text>
-              </View>
-            </Card>
-          ))}
-        </ScrollView>
-      );
+    if (!this.state.fontsAreLoaded) {
+      return <AppLoading />
+    }
+
+    return (
+      <ScrollView style={styles.container}>
+        {events && events.slice(0,10).map( event => (
+          <Card key={event.ID}>
+            <Image
+              styleName="featured"
+              source={{uri: event.featured_media }}
+            />
+            <View styleName="content">
+              <Subtitle>{event.title.rendered}</Subtitle>
+              <Caption>{event.StartDate}</Caption>
+            </View>
+          </Card>
+        ))}
+        <AppNavigator />
+      </ScrollView>
+    );
   }
 }
-
-export default withTheme(App)
 
 const styles = StyleSheet.create({
   container: {
